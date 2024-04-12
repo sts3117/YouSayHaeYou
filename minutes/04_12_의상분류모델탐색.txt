@@ -1,0 +1,11 @@
+-의상의 재질이나 소재에 대하여 cv를 이용하여 분류할 수 있는지 알아봄.
+--딥러닝을 이용한 의류 이미지의 텍스타일 소재 분류(2023), 논문에 의하면 resnet과 vision transformer을 사용하여 분류하였으나, 정확도가 60%에서 70% 사이로 실제로 사용하기에는 부족한 모습을 확인할 수 있었다.
+--textilenet(https://github.com/hahashu/TextileNet?tab=readme-ov-file)은 직물과 소재에 대하여 resnet과 VIT를 이용한 분류를 진행하였으나, 낮은 정확도로 실사용에 부족한 모습을 보임. 사용한 데이터셋은 761,000개의 이미지였다. 옷 사진을 소재 데이터셋과 직물 데이터셋으로 준비함.
+---즉, CV을 이용한 의류의 소재 분류는 어렵다고 생각함.
+-의상 분류 모델에 대한 생각
+--cnn 기반의 모델로 할지, vision transformer로 해야할지
+--둘 다 쓰고 비교해서 더 빠르고 정확도 높은걸 써야할지? 포인트는 더 적은 자원을 소모해서 질좋은 결과를 가져오는 모델을 쓰는게 좋겠지.
+--강사님 피셜 efficient net이 무난하고 좋음. 만약 더 높은 성능을 원한다면 vit를 기반으로 진행하는 것도 말씀하셨다
+--만약 vit를 사용한다면, LeViT(https://github.com/facebookresearch/LeViT?tab=readme-ov-file) 네트워크를 가져와서 fine-tuning 진행하는 작업을 해보는 것도 나쁘진 않을 듯.
+--그래도 일순위 모델은 effnet의 fine-tunning으로 생각.
+(강주호 작성)
