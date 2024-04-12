@@ -1,6 +1,10 @@
 초기 설정
 	git init
 	git remote add origin https://github.com/sts3117/YouSayHaeYou.git
+	
+	git config --global user.email "you@example.com"
+	git config --global user.name "Your Name"
+
 
 
 git pull origin main 		: Repository 에 있는 모든 자료를 한 번에 가져온다
@@ -10,3 +14,9 @@ git commit -m "message"	: 변경내용설명
 git push origin main		: push 요청하여 git 변경내용 적용됨
 
 @@ push 전에 pull 
+
+git status
+git add .
+git commit -m "message"
+git branch -M main			: branch main 으로 변경
+git push -u origin main
