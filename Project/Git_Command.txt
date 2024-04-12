@@ -1,0 +1,12 @@
+초기 설정
+	git init
+	git remote add origin https://github.com/sts3117/YouSayHaeYou.git
+
+
+git pull origin main 		: Repository 에 있는 모든 자료를 한 번에 가져온다
+git status				: 로컬 폴더와 git 과의 싱크 상태 확인
+git add .				: 변경된 파일 tracking
+git commit -m "message"	: 변경내용설명
+git push origin main		: push 요청하여 git 변경내용 적용됨
+
+@@ push 전에 pull 
