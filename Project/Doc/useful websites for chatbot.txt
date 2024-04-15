@@ -4,3 +4,7 @@ useful websites for fashion recommendation chatbot
 https://mrmaheshrajput.medium.com/how-to-make-a-recommender-system-chatbot-with-llms-770c12bbca4a 
 
 - https://typeset.io/questions/what-are-the-best-deep-learning-models-for-clothes-2hcfcbs60v
+
+-cnn을 이용한, lstm을 이용한 챗봇을 위한 딥러닝 사례
+- 추가적으로 flask를 이용한 데이터베이스 연결과 카카오톡 api를 이용한 챗봇 구현 사례
+-- https://dacon.io/myprofile/419621/codeshare
