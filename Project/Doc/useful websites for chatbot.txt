@@ -1,0 +1,6 @@
+useful websites for fashion recommendation chatbot
+
+- How to make a recommendation system chatbot with llm
+https://mrmaheshrajput.medium.com/how-to-make-a-recommender-system-chatbot-with-llms-770c12bbca4a 
+
+- https://typeset.io/questions/what-are-the-best-deep-learning-models-for-clothes-2hcfcbs60v
