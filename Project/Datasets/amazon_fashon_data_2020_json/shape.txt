@@ -1,0 +1,18 @@
+
+
+raw_df = pd.read_json('/content/marketing_sample_for_amazon_com-amazon_fashion_products__20200201_20200430__30k_data.ldjson', lines=True)
+raw_df.shape
+(30000, 33)
+
+raw_df.columns
+Index(['uniq_id', 'crawl_timestamp', 'asin', 'product_url', 'product_name',
+       'image_urls__small', 'medium', 'large', 'browsenode', 'brand',
+       'sales_price', 'weight', 'rating', 'sales_rank_in_parent_category',
+       'sales_rank_in_child_category', 'delivery_type', 'meta_keywords',
+       'amazon_prime__y_or_n', 'parent___child_category__all',
+       'best_seller_tag__y_or_n', 'other_items_customers_buy',
+       'product_details__k_v_pairs', 'discount_percentage', 'colour',
+       'no__of_reviews', 'seller_name', 'seller_id', 'left_in_stock',
+       'no__of_offers', 'no__of_sellers', 'technical_details__k_v_pairs',
+       'formats___editions', 'name_of_author_for_books'],
+      dtype='object')
