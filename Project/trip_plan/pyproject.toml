@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "trip-plan"
+version = "0.1.0"
+description = ""
+authors = ["정홍주 <forcloud300@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<=3.13"
+pydantic = "^2.4.2"
+langchain = "0.1.10"
+openai = "1.13.3"
+langchain-openai = "0.0.5"
+python-dotenv = "1.0.0"
+langchain-community = "0.0.25"
+crewai = "0.22.0"
+tavily-python = "0.3.1"
+duckduckgo-search = "5.1.0"
+crewai-tools = "0.1.0"
+gradio = "4.19.2"
+langchain-google-genai = "^1.0.2"
+
+bs4 = "0.0.2"
+selenium = "4.19.0"
+webdriver-manager = "4.0.1"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
