@@ -1,0 +1,3 @@
+cmd에서
+streamlit run C:\...<YOUR_PATH>...
+로 실행

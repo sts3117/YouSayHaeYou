@@ -124,7 +124,7 @@ def main():
 
         def hotel():
             data_hotel = {
-                'textQuery': f'{destination} 근처에서 잘 수 있는 곳',
+                'textQuery': f'Place to stay near {destination}',
                 'minRating': min_rating,
                 'languageCode': 'ko',
                 'locationBias': {
@@ -149,7 +149,7 @@ def main():
 
         def restaurant():
             data_restaurant = {
-                'textQuery': f'{destination} 근처에서 먹을 수 있는 곳',
+                'textQuery': f'Place to eat near {destination}',
                 'minRating': min_rating,
                 'languageCode': 'ko',
                 'locationBias': {
