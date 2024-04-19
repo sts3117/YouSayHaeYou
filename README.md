@@ -3,7 +3,8 @@
 
 
 
-<img src="https://capsule-render.vercel.app/api?type=waving&height=101&color=gradient&text=Ali-me%20&section=header&textBg=false&strokeWidth=0&reversal=false&fontAlign=50&fontAlignY=50&descAlign=50&descAlignY=60&animation=fadeIn&fontColor=000000" />
+<img src="https://capsule-render.vercel.app/api?type=waving&height=150&color=gradient&text=Ali-me%20&section=header&textBg=false&strokeWidth=0&reversal=false&fontAlign=50&fontAlignY=50&descAlign=50&descAlignY=60&animation=fadeIn&fontColor=000000" />
 
 
-<imn src="https://github-readme-stats.vercel.app/api?username={username}&theme=blue-green" />
+
+![](https://github-readme-stats.vercel.app/api?username={username}&theme=blue-green)
