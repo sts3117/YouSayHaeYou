@@ -372,7 +372,7 @@ def main():
                 actor: str
                 payload: str
 
-            llm = ChatOpenAI(openai_api_key=os.environ["OPENAI_API_KEY"], model_name='gpt-3.5-turbo', temperature=0)
+            # llm = ChatOpenAI(openai_api_key=os.environ["OPENAI_API_KEY"], model_name='gpt-3.5-turbo', temperature=0)
 
             USER = "user"
             ASSISTANT = "ai"
