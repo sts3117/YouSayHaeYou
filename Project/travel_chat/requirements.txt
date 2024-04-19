@@ -12,3 +12,5 @@ transformers==4.36.2
 sentence_transformers==2.2.2
 chainlit==1.0.504
 duckduckgo-search==5.3.0
+georouting==0.0.8
+googlemaps==4.10.0
