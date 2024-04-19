@@ -1,5 +1,6 @@
 # import library
 import asyncio
+
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 import streamlit as st
@@ -13,6 +14,7 @@ import folium
 from streamlit_folium import folium_static
 
 import chatbot_core
+import route_core
 
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import HuggingFaceEmbeddings
@@ -20,6 +22,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain.document_loaders import DataFrameLoader
 from langchain.agents import tool
+import georouting, googlemaps
 import datetime
 
 # Load environment variables from .env file
@@ -67,10 +70,12 @@ def get_current_temperature(latitude: float, longitude: float) -> dict:
 
     return current_temperature
 
+
 def main():
     st.sidebar.title("Travel Recommendation App Demo")
 
     api_key = st.sidebar.text_input("Google Maps API key를 입력해주세요:", type="password")
+    os.environ["GOOGLE_MAP_API_KEY"] = api_key
     openai_api_key = st.sidebar.text_input("OpenAI API key를 입력해주세요:", type="password")
     os.environ["OPENAI_API_KEY"] = openai_api_key
     # SERPER_API_KEY = st.sidebar.text_input("serper API key를 입력해주세요:", type="password")
@@ -141,6 +146,7 @@ def main():
             response_hotel = requests.post(url, data=json_data_hotel, headers=headers_place)
             # Print the response
             result_hotel = response_hotel.json()
+            print(result_hotel)
             # Convert JSON data to DataFrame
             df_hotel = pd.json_normalize(result_hotel['places'])
             # Add 'type'
@@ -166,6 +172,7 @@ def main():
             response_restaurant = requests.post(url, data=json_data_restaurant, headers=headers_place)
             # Print the response
             result_restaurant = response_restaurant.json()
+            print(result_restaurant)
             # Convert JSON data to DataFrame
             df_restaurant = pd.json_normalize(result_restaurant['places'])
             # Add 'type'
@@ -191,18 +198,19 @@ def main():
             response_tourist = requests.post(url, data=json_data_tourist, headers=headers_place)
             # Print the response
             result_tourist = response_tourist.json()
+            print(result_tourist)
             # Convert JSON data to DataFrame
             df_tourist = pd.json_normalize(result_tourist['places'])
             # Add 'type'
             df_tourist['type'] = 'Tourist'
             return df_tourist
 
-        df_hotel = hotel()
-        df_restaurant = restaurant()
-        df_tourist = tourist()
+        df_hotel1 = hotel()
+        df_restaurant1 = restaurant()
+        df_tourist1 = tourist()
 
         # Assuming all three dataframes have similar columns
-        df_place = pd.concat([df_hotel, df_restaurant, df_tourist], ignore_index=True)
+        df_place = pd.concat([df_hotel1, df_restaurant1, df_tourist1], ignore_index=True)
         df_place = df_place.sort_values(by=['userRatingCount', 'rating'], ascending=[False, False]).reset_index(
             drop=True)
 
@@ -226,7 +234,8 @@ def main():
             type_colour = {'Hotel': 'blue', 'Restaurant': 'green', 'Tourist': 'orange'}
             type_icon = {'Hotel': 'home', 'Restaurant': 'cutlery', 'Tourist': 'star'}
             print(df_place_rename['Latitude'][0], df_place_rename['Longitude'][0])
-            mymap = folium.Map(location=(df_place_rename['Latitude'][0], df_place_rename['Longitude'][0]), zoom_start=9, control_scale=True)
+            mymap = folium.Map(location=(df_place_rename['Latitude'][0], df_place_rename['Longitude'][0]), zoom_start=9,
+                               control_scale=True)
 
             for i in range(len(df_place_rename)):
                 icon_color = type_colour[df_place_rename['Type'][i]]
@@ -234,7 +243,8 @@ def main():
                 icon = folium.Icon(color=icon_color, icon=icon_type)
 
                 # Use different icons for hotels, restaurants, and tourist attractions
-                folium.Marker(location=(df_place_rename['Latitude'][i], df_place_rename['Longitude'][i]), icon=icon, popup="<i>{}</i>".format(df_place_rename['Name'][i])).add_to(mymap)
+                folium.Marker(location=(df_place_rename['Latitude'][i], df_place_rename['Longitude'][i]), icon=icon,
+                              popup="<i>{}</i>".format(df_place_rename['Name'][i])).add_to(mymap)
 
             folium_static(mymap)
 
@@ -242,6 +252,15 @@ def main():
             st.dataframe(df_place_rename)
             total_map()
 
+        def route():
+            st.header(f'길 찾기 🗺️')
+            start = st.text_input('어디에서 출발하시나요?:')
+            dest = st.text_input('어디로 가시나요?:')
+            sel = st.selectbox('어떻게 가시나요?', ('대중교통으로', '걸어서', '차로', '자전거로'))
+            if st.button('검색'):
+                ddf, route1 = route_core.s_to_d(start, dest, sel)
+                m1 = route1.plot_route()
+                folium_static(m1)
 
         def maps():
             st.header("🌏 여행 가이드 🌏")
@@ -262,7 +281,7 @@ def main():
                 st.text(f"지금이 여행하기 딱 좋은 날씨! 바로 출발하세요!")
 
             if places_type == '호텔 🏨':
-                df_place = df_hotel
+                df_place = df_hotel1
                 with st.spinner("잠시만 기다려주세요..."):
                     for index, row in df_place.iterrows():
                         location = [row['location.latitude'], row['location.longitude']]
@@ -290,8 +309,9 @@ def main():
                         st.write(f"웹사이트: {row['websiteUri']}")
                         st.write(f"추가적인 정보: {row['googleMapsUri']}\n")
 
+
             elif places_type == '음식점 🍴':
-                df_place = df_restaurant
+                df_place = df_restaurant1
                 with st.spinner("잠시만 기다려주세요..."):
                     for index, row in df_place.iterrows():
                         location = [row['location.latitude'], row['location.longitude']]
@@ -319,7 +339,7 @@ def main():
                         st.write(f"웹사이트: {row['websiteUri']}")
                         st.write(f"추가적인 정보: {row['googleMapsUri']}\n")
             else:
-                df_place = df_tourist
+                df_place = df_tourist1
                 with st.spinner("잠시만 기다려주세요..."):
                     for index, row in df_place.iterrows():
                         location = [row['location.latitude'], row['location.longitude']]
@@ -352,7 +372,7 @@ def main():
                 actor: str
                 payload: str
 
-            llm = ChatOpenAI(openai_api_key=openai_api_key, model_name='gpt-3.5-turbo', temperature=0)
+            llm = ChatOpenAI(openai_api_key=os.environ["OPENAI_API_KEY"], model_name='gpt-3.5-turbo', temperature=0)
 
             USER = "user"
             ASSISTANT = "ai"
@@ -462,13 +482,15 @@ def main():
                     st.chat_message(ASSISTANT).write(response)
             # st.write("Chatbot")
 
-        method = st.sidebar.radio(" ", ["검색 🔎", "챗봇 🤖", "데이터베이스 📑"], key="method_app")
+        method = st.sidebar.radio(" ", ["검색 🔎", "챗봇 🤖", "데이터베이스 📑", "길찾기 🗺️"], key="method_app")
         if method == "검색 🔎":
             maps()
         elif method == "챗봇 🤖":
             chatbot()
-        else:
+        elif method == "데이터베이스 📑":
             database()
+        else:
+            route()
 
     st.sidebar.markdown(''' 
         ## Created by: 
@@ -476,7 +498,8 @@ def main():
         [한컴아카데미](https://hancomacademy.com/) with nvidia\n
         special thanks to Ahmad Luay Adnani
         ''')
-    st.image("https://camo.githubusercontent.com/6be6e494569696bede37e8b21f6ebe646fdbad1c81e39082e5136bf5a8afc067/68747470733a2f2f63617073756c652d72656e6465722e76657263656c2e6170702f6170693f747970653d776176696e6726636f6c6f723d6175746f266865696768743d3230302673656374696f6e3d68656164657226746578743d416c692d6d6526666f6e7453697a653d3930")
+    st.image(
+        "https://camo.githubusercontent.com/6be6e494569696bede37e8b21f6ebe646fdbad1c81e39082e5136bf5a8afc067/68747470733a2f2f63617073756c652d72656e6465722e76657263656c2e6170702f6170693f747970653d776176696e6726636f6c6f723d6175746f266865696768743d3230302673656374696f6e3d68656164657226746578743d416c692d6d6526666f6e7453697a653d3930")
 
 
 if __name__ == '__main__':
