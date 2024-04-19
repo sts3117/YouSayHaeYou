@@ -62,8 +62,6 @@ def s_to_d(start, dest, sel):
         mode = "driving"
     elif sel == '걸어서':
         mode = "walking"
-    elif sel == '자전거로':
-        mode = "bicycling"
     else:
         mode = "transit"
 
