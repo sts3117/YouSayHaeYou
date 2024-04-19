@@ -256,8 +256,8 @@ def main():
             st.header(f'길 찾기 🗺️')
             start = st.text_input('어디에서 출발하시나요?:')
             dest = st.text_input('어디로 가시나요?:')
-            sel = st.selectbox('어떻게 가시나요?', ('대중교통으로', '걸어서', '차로', '자전거로'))
-            if st.button('검색'):
+            sel = st.selectbox('어떻게 가시나요?', ('대중교통으로', '걸어서', '차로'))
+            if st.button('길 찾기'):
                 ddf, route1 = route_core.s_to_d(start, dest, sel)
                 m1 = route1.plot_route()
                 folium_static(m1)
