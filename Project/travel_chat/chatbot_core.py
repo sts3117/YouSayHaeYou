@@ -9,6 +9,7 @@ from langchain.schema import AgentAction, AgentFinish, OutputParserException
 import re
 from langchain.agents import initialize_agent, Tool
 from langchain.chat_models import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.tools import DuckDuckGoSearchRun
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 
@@ -16,6 +17,7 @@ import os
 import chainlit as cl
 
 # os.environ["OPENAI_API_KEY"] = "<openai-key>"
+os.environ["GOOGLE_API_KEY"]
 
 # template = """Answer the following questions as best you can, but speaking as passionate travel expert. You have access to the following tools:
 #
@@ -212,7 +214,8 @@ def agent():
     )
     output_parser = CustomOutputParser()
     # memory = ConversationBufferWindowMemory(k=2)
-    llm = ChatOpenAI(temperature=0.7, model="gpt-3.5-turbo")
+    # llm = ChatOpenAI(temperature=0.7, model="gpt-3.5-turbo")
+    llm = ChatGoogleGenerativeAI(model="gemini-pro")
     # LLM chain consisting of the LLM and a prompt
     llm_chain = LLMChain(llm=llm, prompt=prompt)
     tool_names = [tool.name for tool in tools]
