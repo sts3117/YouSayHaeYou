@@ -10,12 +10,12 @@
     - 검색 데이터, 지도 데이터를 langchain claude에 넘겨 프롬프트 엔지니어링을 통해 계획을 세우도록 함
         
         ```python
-        prompt = f"""
-You are a travel planner assistant. Based on the following information about hotels, restaurants, and tourist attractions in {city}, create an optimal travel itinerary for a {num_days}-day trip. Consider factors such as ratings, location, and relevance to create a well-rounded and enjoyable experience.
-
-Places:
-{str(places)}
-"""
+            prompt = f"""
+            You are a travel planner assistant. Based on the following information about hotels, restaurants, and tourist attractions in {city}, create an optimal travel itinerary for a {num_days}-day trip. Consider factors such as ratings, location, and relevance to create a well-rounded and enjoyable experience.
+            
+            Places:
+            {str(places)}
+            """
         ```
         
 
