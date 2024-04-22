@@ -72,3 +72,152 @@ my_crew = Crew(
 llm = ChatAnthropic(temperature=0.7, model_name='claude-3-sonnet-20240229') # sonnet , opu
 
 ```
+---
+# 0421
+## 오전
+
+확실하지는 않으나, 개인적인 의견으로는
+
+- places 오류는 ip 관련해서 네트워크 문제가 아닌 것 같음, 상태코드 200 잘 들어옴
+    - 오히려, 파싱이나 요청 코드가 문제일까 아닌가 의심스러움
+    - 근데 뭘 건드려야 할 지 모르겠음
+- claude는 위 문제만 해결되면 사용도 가능할 것 같음
+
+- 검색 결과가 없거나 키가 없는 경우 예외 처리
+    
+    ```python
+    # chatbot_core.py
+    
+    def search_online(input_text):
+        search = DuckDuckGoSearchRun().run(f"site:tripadvisor.com things to do{input_text}")
+        return search if search else "No relevant search results found on TripAdvisor."
+    
+    def search_hotel(input_text):
+        search = DuckDuckGoSearchRun().run(f"site:booking.com {input_text}")
+        return search if search else "No relevant hotel search results found on Booking.com."
+    
+    def search_flight(input_text):
+        search = DuckDuckGoSearchRun().run(f"site:skyscanner.com {input_text}")
+        return search if search else "No relevant flight search results found on Skyscanner."
+    
+    def search_general(input_text):
+        search = DuckDuckGoSearchRun().run(f"{input_text}")
+        return search if search else "No relevant general search results found."
+    ```
+    
+    ```python
+    # app_run.py
+    
+    def hotel():
+        data_hotel = {
+            'textQuery': f'Place to stay near {destination}',
+            'minRating': min_rating,
+            'languageCode': 'ko',
+            'locationBias': {
+                "circle": {
+                    "center": circle_center,
+                    "radius": circle_radius
+                }
+            }
+        }
+    
+        json_data_hotel = json.dumps(data_hotel)
+        response_hotel = requests.post(url, data=json_data_hotel, headers=headers_place)
+    
+        if response_hotel.status_code == 200:
+            result_hotel = response_hotel.json()
+            if 'places' in result_hotel:
+                df_hotel = pd.json_normalize(result_hotel['places'])
+                df_hotel['type'] = 'Hotel'
+                return df_hotel
+            else:
+                print("No 'places' key found in the hotel API response")
+                return pd.DataFrame()
+        else:
+            print(f"Hotel API request failed with status code: {response_hotel.status_code}")
+            return pd.DataFrame()
+    
+    def restaurant():
+        data_restaurant = {
+            'textQuery': f'Place to eat near {destination}',
+            'minRating': min_rating,
+            'languageCode': 'ko',
+            'locationBias': {
+                "circle": {
+                    "center": circle_center,
+                    "radius": circle_radius
+                }
+            }
+        }
+    
+        json_data_restaurant = json.dumps(data_restaurant)
+        response_restaurant = requests.post(url, data=json_data_restaurant, headers=headers_place)
+    
+        if response_restaurant.status_code == 200:
+            result_restaurant = response_restaurant.json()
+            if 'places' in result_restaurant:
+                df_restaurant = pd.json_normalize(result_restaurant['places'])
+                df_restaurant['type'] = 'Restaurant'
+                return df_restaurant
+            else:
+                print("No 'places' key found in the restaurant API response")
+                return pd.DataFrame()
+        else:
+            print(f"Restaurant API request failed with status code: {response_restaurant.status_code}")
+            return pd.DataFrame()
+    
+    def tourist():
+        data_tourist = {
+            'textQuery': f'Tourist attraction near {destination}',
+            'minRating': min_rating,
+            'languageCode': 'ko',
+            'locationBias': {
+                "circle": {
+                    "center": circle_center,
+                    "radius": circle_radius
+                }
+            }
+        }
+    
+        json_data_tourist = json.dumps(data_tourist)
+        response_tourist = requests.post(url, data=json_data_tourist, headers=headers_place)
+    
+        if response_tourist.status_code == 200:
+            result_tourist = response_tourist.json()
+            if 'places' in result_tourist:
+                df_tourist = pd.json_normalize(result_tourist['places'])
+                df_tourist['type'] = 'Tourist'
+                return df_tourist
+            else:
+                print("No 'places' key found in the tourist API response")
+                return pd.DataFrame()
+        else:
+            print(f"Tourist API request failed with status code: {response_tourist.status_code}")
+            return pd.DataFrame()
+            
+    df_hotel1 = hotel()
+    df_restaurant1 = restaurant()
+    df_tourist1 = tourist()
+    
+    # Assuming all three dataframes have similar columns
+    if not df_hotel1.empty and not df_restaurant1.empty and not df_tourist1.empty:
+        df_place = pd.concat([df_hotel1, df_restaurant1, df_tourist1], ignore_index=True)
+        df_place = df_place.sort_values(by=['userRatingCount', 'rating'], ascending=[False, False]).reset_index(drop=True)
+    
+        df_place_rename = df_place[['type', 'displayName.text', 'formattedAddress', 'rating', 'userRatingCount', 'googleMapsUri', 'websiteUri', 'location.latitude', 'location.longitude', 'displayName.languageCode']]
+        df_place_rename = df_place_rename.rename(columns={
+            'displayName.text': 'Name',
+            'rating': 'Rating',
+            'googleMapsUri': 'Google Maps URL',
+            'websiteUri': 'Website URL',
+            'userRatingCount': 'User Rating Count',
+            'location.latitude': 'Latitude',
+            'location.longitude': 'Longitude',
+            'formattedAddress': 'Address',
+            'displayName.languageCode': 'Language Code',
+            'type': 'Type'
+        })
+    else:
+        print("One or more dataframes are empty. Skipping DataFrame concatenation and renaming.")
+        df_place_rename = pd.DataFrame()
+    ```
