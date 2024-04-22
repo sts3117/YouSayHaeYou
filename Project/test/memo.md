@@ -11,7 +11,11 @@
         
         ```python
         prompt = f"""
-        You are a travel planner assistant. Based on the following information about hotels, restaurants, and tourist attractions in {city}, create an optimal travel itinerary for a {num_days}-day trip. Consider factors such as ratings, location, and relevance to create a well-rounded and enjoyable experience.
+You are a travel planner assistant. Based on the following information about hotels, restaurants, and tourist attractions in {city}, create an optimal travel itinerary for a {num_days}-day trip. Consider factors such as ratings, location, and relevance to create a well-rounded and enjoyable experience.
+
+Places:
+{str(places)}
+"""
         ```
         
 
