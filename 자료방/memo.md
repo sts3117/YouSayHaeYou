@@ -83,8 +83,8 @@ llm = ChatAnthropic(temperature=0.7, model_name='claude-3-sonnet-20240229') # so
     - 근데 뭘 건드려야 할 지 모르겠음
 - claude는 위 문제만 해결되면 사용도 가능할 것 같음
 
-- 검색 결과가 없거나 키가 없는 경우 예외 처리
-    
+> 검색 결과가 없거나 키가 없는 경우 예외 처리
+>   
     ```python
     # chatbot_core.py
     
