@@ -1,23 +1,32 @@
 import asyncio
+
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
-from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser
+from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser, create_react_agent
 from langchain.prompts import StringPromptTemplate
 from langchain import OpenAI, SerpAPIWrapper, LLMChain
 from typing import List, Union
 from langchain.schema import AgentAction, AgentFinish, OutputParserException
 import re
-from langchain.agents import initialize_agent, Tool
+from langchain.agents.output_parsers import ReActJsonSingleInputOutputParser
 from langchain.chat_models import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.tools import DuckDuckGoSearchRun
+from langchain import hub
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
+from langchain.tools.render import render_text_description_and_args
+from langchain_community.agent_toolkits.amadeus.toolkit import AmadeusToolkit
 
 import os
 import chainlit as cl
+import streamlit as st
 
 # os.environ["OPENAI_API_KEY"] = "<openai-key>"
-os.environ["GOOGLE_API_KEY"]
+# os.environ["GOOGLE_API_KEY"]
+os.environ["AMADEUS_CLIENT_ID"] = st.secrets["AMADEUS_CLIENT_ID"]
+os.environ["AMADEUS_CLIENT_SECRET"] = st.secrets["AMADEUS_CLIENT_SECRET"]
+toolkit = AmadeusToolkit()
+tool_amadeus = toolkit.get_tools()
 
 # template = """Answer the following questions as best you can, but speaking as passionate travel expert. You have access to the following tools:
 #
@@ -191,12 +200,19 @@ def agent():
             func=search_hotel,
             description="useful for when you need to answer hotel questions"
         ),
-        Tool(
-            name="Search flight",
-            func=search_flight,
-            description="useful for when you need to answer flight questions"
+        # Tool(
+        #     name="Search flight",
+        #     func=search_flight,
+        #     description="useful for when you need to answer flight questions"
+        # ),
+        Tool.from_function(
+            name="Search flight and airport",
+            func=lambda x: agent_executor2.invoke({"input": x}),
+            description="useful for when you need to answer flight questions and airport questions"
         )
     ]
+
+
 
     prompt = CustomPromptTemplate(
         template=template,
@@ -214,10 +230,33 @@ def agent():
     )
     output_parser = CustomOutputParser()
     # memory = ConversationBufferWindowMemory(k=2)
-    # llm = ChatOpenAI(temperature=0.7, model="gpt-3.5-turbo")
-    llm = ChatGoogleGenerativeAI(model="gemini-pro")
+    llm = ChatOpenAI(temperature=0.7, model="gpt-3.5-turbo")
+    # llm = ChatGoogleGenerativeAI(model="gemini-pro")
     # LLM chain consisting of the LLM and a prompt
     llm_chain = LLMChain(llm=llm, prompt=prompt)
+
+    prompt_for_amadeus1 = hub.pull("hwchase17/react-json")
+    prompt_for_amadeus2 = """"
+    Here is instructions to use "tool":
+    departureDateTimeEarliest" and "departureDateTimeEarliest" MUST be the same date.
+    If you want to find flights for a certain period of time, you have to use the "tool" N times for that period.
+    If you're trying to search for round-trip flights, call this function for the outbound flight first, and then call again for the return flight.
+    The currency must be converted to Korean Won before Final Answer."""
+    agent2 = create_react_agent(
+        llm,
+        tool_amadeus,
+        (prompt_for_amadeus1 + prompt_for_amadeus2),
+        tools_renderer=render_text_description_and_args,
+        output_parser=ReActJsonSingleInputOutputParser(),
+    )
+    agent_executor2 = AgentExecutor(
+        agent=agent2,
+        tools=tool_amadeus,
+        verbose=True,
+        handle_parsing_errors="Check your output and make sure it conforms, use the Action/Action Input syntax",
+        max_iterations=37
+    )
+
     tool_names = [tool.name for tool in tools]
     agent = LLMSingleActionAgent(
         llm_chain=llm_chain,
@@ -225,6 +264,8 @@ def agent():
         stop=["\nObservation:"],
         allowed_tools=tool_names
     )
-    agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory, handle_parsing_errors="Check your output and make sure it conforms, use the Action/Action Input syntax")
+    agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory,
+                                                        handle_parsing_errors="Check your output and make sure it conforms, use the Action/Action Input syntax",
+                                                        max_iterations=20)
 
     return agent_executor
