@@ -15,6 +15,7 @@ from streamlit_folium import folium_static
 
 import chatbot_core
 import route_core
+import auth_core
 
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import HuggingFaceEmbeddings
@@ -22,16 +23,23 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain.document_loaders import DataFrameLoader
 from langchain.agents import tool
-import georouting, googlemaps
 import datetime
 
-# Load environment variables from .env file
 load_dotenv()
+
+# Load environment variables from .env file
 
 # Retrieve the API key from the environment variable
 # api_key = os.getenv('API_KEY')
 # openai_api_key = os.getenv("MY_OPENAI_KEY")
 url = 'https://places.googleapis.com/v1/places:searchText'
+
+
+
+# st.write(os.getcwd())
+with st.sidebar:
+    auth_core.main()
+
 
 
 # if not api_key:
@@ -72,14 +80,18 @@ def get_current_temperature(latitude: float, longitude: float) -> dict:
 
 
 def main():
-    st.sidebar.title("Travel Recommendation App Demo")
-
-    api_key = st.sidebar.text_input("Google Maps API key를 입력해주세요:", type="password")
-    os.environ["GOOGLE_MAP_API_KEY"] = api_key
-    openai_api_key = st.sidebar.text_input("OpenAI API key를 입력해주세요:", type="password")
-    os.environ["OPENAI_API_KEY"] = openai_api_key
-    # SERPER_API_KEY = st.sidebar.text_input("serper API key를 입력해주세요:", type="password")
-    # os.environ["SERPER_API_KEY"] = SERPER_API_KEY
+    # st.sidebar.title("Travel Recommendation App Demo")
+    # st.write(st.session_state)
+    # if 'user_info' not in st.session_state:
+    #     return
+    if not st.session_state['authentication_status']:
+        return
+    # api_key = st.sidebar.text_input("Google Maps API key를 입력해주세요:", type="password")
+    # os.environ["GOOGLE_MAP_API_KEY"] = api_key
+    # openai_api_key = st.sidebar.text_input("OpenAI API key를 입력해주세요:", type="password")
+    # os.environ["OPENAI_API_KEY"] = openai_api_key
+    os.environ["GOOGLE_MAP_API_KEY"] = st.secrets["GOOGLE_MAP_API_KEY"]
+    os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
     st.sidebar.write('아래 내용을 모두 채워주세요.')
     destination = st.sidebar.text_input('어느 지역으로 가시나요?:', key='destination_app')
@@ -91,7 +103,7 @@ def main():
     if destination:
         headers = {
             'Content-Type': 'application/json',
-            'X-Goog-Api-Key': api_key,
+            'X-Goog-Api-Key': os.environ["GOOGLE_MAP_API_KEY"],
             'X-Goog-FieldMask': 'places.location',
         }
         data = {
@@ -123,7 +135,7 @@ def main():
 
         headers_place = {
             'Content-Type': 'application/json',
-            'X-Goog-Api-Key': api_key,
+            'X-Goog-Api-Key': os.environ["GOOGLE_MAP_API_KEY"],
             'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.priceLevel,places.userRatingCount,places.rating,places.websiteUri,places.location,places.googleMapsUri',
         }
 
@@ -258,9 +270,18 @@ def main():
             dest = st.text_input('어디로 가시나요?:')
             sel = st.selectbox('어떻게 가시나요?', ('대중교통으로', '걸어서', '차로'))
             if st.button('길 찾기'):
-                ddf, route1 = route_core.s_to_d(start, dest, sel)
-                m1 = route1.plot_route()
-                folium_static(m1)
+                if sel == '대중교통으로':
+                    ddf, route1, distance, duration, start_point = route_core.s_to_d(start, dest, sel)
+                    m1 = route_core.draw_route_on_folium(ddf, start_point)
+                    folium_static(m1)
+                    st.text(f"거리는 {distance}km입니다.")
+                    st.text(f"예상 소요 시간은 {duration}에요!")
+                else:
+                    ddf, route1, distance, duration, _ = route_core.s_to_d(start, dest, sel)
+                    m1 = route1.plot_route()
+                    folium_static(m1)
+                    st.text(f"거리는 {distance}km입니다.")
+                    st.text(f"예상 소요 시간은 {duration}에요!")
 
         def maps():
             st.header("🌏 여행 가이드 🌏")
@@ -491,6 +512,17 @@ def main():
             database()
         else:
             route()
+
+    js = '''
+        <script>
+            var body = window.parent.document.querySelector(".main");
+            console.log(body);
+            body.scrollTop = 0;
+        </script>
+        '''
+
+    if st.button(f"위로 이동"):
+        st.components.v1.html(js)
 
     st.sidebar.markdown(''' 
         ## Created by: 
