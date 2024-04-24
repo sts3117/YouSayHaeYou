@@ -73,7 +73,7 @@ llm = ChatAnthropic(temperature=0.7, model_name='claude-3-sonnet-20240229') # so
 
 ```
 ---
-# 0421
+# 0422
 ## 오전
 
 확실하지는 않으나, 개인적인 의견으로는
