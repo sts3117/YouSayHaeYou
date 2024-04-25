@@ -21,6 +21,9 @@ import os
 import chainlit as cl
 import streamlit as st
 
+from chatbot_add_agent import all_in_1_agent, sms_or_email
+from datetime import datetime
+
 # os.environ["OPENAI_API_KEY"] = "<openai-key>"
 # os.environ["GOOGLE_API_KEY"]
 os.environ["AMADEUS_CLIENT_ID"] = st.secrets["AMADEUS_CLIENT_ID"]
@@ -61,6 +64,10 @@ Answer the following questions as best you can, but speaking as passionate trave
 user가 원한 기간 동안의 완벽한 일정이 수립되어야 합니다.
 해당 계획에는 항공편, 호텔 및 소요 예산이 포함됩니다.
 
+만약에 Search flight and airport tool을 사용한다면 다음을 따라야합니다.:
+연도가 제공되지 않으면 기본은 2024년으로 검색하십시오.
+통화는 무조건 대한민국 원으로 출력되어야합니다.
+
 Use the following format:
 
 Question: the input question you must answer
@@ -72,7 +79,7 @@ Observation: the result of the action
 Thought: I now know the final answer,
 user가 원한 기간 동안의 완벽한 일정이 수립되어야 합니다,
 해당 계획에는 항공편, 호텔 및 소요 예산이 포함됩니다.
-Final Answer: the final answer to the original input question, You must answer in Korean, Do not omit it and print it out as is
+Final Answer: the final answer to the original input question, You must answer in Korean, Do not omit it and print it out as is.
 
 
 Begin! Remember to answer as a passionate and informative travel expert when giving your final answer.
@@ -160,7 +167,7 @@ def search_online(input_text):
 
 
 def search_hotel(input_text):
-    search = DuckDuckGoSearchRun().run(f"site:booking.com {input_text}")
+    search = DuckDuckGoSearchRun().run(f"site:agoda.com {input_text}")
     return search
 
 
@@ -174,7 +181,7 @@ def search_general(input_text):
     return search
 
 
-memory = ConversationBufferWindowMemory(k=2)
+memory = ConversationBufferWindowMemory(k=15)
 
 
 def _handle_error(error) -> str:
@@ -196,7 +203,7 @@ def agent():
             description="useful for when you need to answer trip plan questions"
         ),
         Tool(
-            name="Search booking",
+            name="Search hotel",
             func=search_hotel,
             description="useful for when you need to answer hotel questions"
         ),
@@ -209,10 +216,23 @@ def agent():
             name="Search flight and airport",
             func=lambda x: agent_executor2.invoke({"input": x}),
             description="useful for when you need to answer flight questions and airport questions"
-        )
+        ),
+        Tool.from_function(
+            name="Search experience and poi",
+            func=lambda x: all_in_1_agent({"input": x}),
+            description="useful for when you need to answer travel experience questions or get the keyword about travel information"
+        ),
+        Tool(
+            name="Search datetime",
+            func=lambda x: datetime.now().isoformat(),
+            description="useful for when you need to know the current datetime",
+        ),
+        Tool(
+            name="Send email",
+            func=lambda x: sms_or_email().invoke({"input": x}),
+            description="Send Email via Infobip. If you need to send email, use Send email",
+        ),
     ]
-
-
 
     prompt = CustomPromptTemplate(
         template=template,
@@ -230,7 +250,8 @@ def agent():
     )
     output_parser = CustomOutputParser()
     # memory = ConversationBufferWindowMemory(k=2)
-    llm = ChatOpenAI(temperature=0.7, model="gpt-3.5-turbo")
+    # llm = ChatOpenAI(temperature=0.7, model="gpt-3.5-turbo")
+    llm = ChatOpenAI(temperature=0.7, model="gpt-4-turbo")
     # llm = ChatGoogleGenerativeAI(model="gemini-pro")
     # LLM chain consisting of the LLM and a prompt
     llm_chain = LLMChain(llm=llm, prompt=prompt)
@@ -239,8 +260,10 @@ def agent():
     prompt_for_amadeus2 = """"
     Here is instructions to use "tool":
     departureDateTimeEarliest" and "departureDateTimeEarliest" MUST be the same date.
-    If you want to find flights for a certain period of time, you have to use the "tool" N times for that period.
+    You can only find one day's worth at a time.
+    If you want to find flights for a multiple days, you have to use the "tool" N times for that period.
     If you're trying to search for round-trip flights, call this function for the outbound flight first, and then call again for the return flight.
+    If there is no specific input for the year, it defaults to 2024.
     The currency must be converted to Korean Won before Final Answer."""
     agent2 = create_react_agent(
         llm,
@@ -254,7 +277,7 @@ def agent():
         tools=tool_amadeus,
         verbose=True,
         handle_parsing_errors="Check your output and make sure it conforms, use the Action/Action Input syntax",
-        max_iterations=37
+        max_iterations=5
     )
 
     tool_names = [tool.name for tool in tools]
@@ -265,7 +288,7 @@ def agent():
         allowed_tools=tool_names
     )
     agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory,
-                                                        handle_parsing_errors="Check your output and make sure it conforms, use the Action/Action Input syntax",
+                                                        handle_parsing_errors="Check your output and make sure it conforms, use the Action/Action Input syntax, If the current output is the final answer, add 'Final Answer:' at the beginning.",
                                                         max_iterations=20)
 
-    return agent_executor
+    return agent_executor, memory
