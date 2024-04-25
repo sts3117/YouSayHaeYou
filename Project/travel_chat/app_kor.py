@@ -15,7 +15,9 @@ from streamlit_folium import folium_static
 
 import chatbot_core
 import route_core
-import auth_core
+from firebase_admin import auth
+import auth_core1
+import data_core
 
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import HuggingFaceEmbeddings
@@ -34,12 +36,13 @@ load_dotenv()
 # openai_api_key = os.getenv("MY_OPENAI_KEY")
 url = 'https://places.googleapis.com/v1/places:searchText'
 
-
+st.set_page_config(page_title="travel assistant", layout="wide", page_icon="🛫", menu_items={
+        'About': "이 app은 여러분들의 여행을 도와줄 거에요!"
+    })
 
 # st.write(os.getcwd())
 with st.sidebar:
-    auth_core.main()
-
+    auth_core1.main()
 
 
 # if not api_key:
@@ -277,7 +280,7 @@ def main():
                     st.text(f"거리는 {distance}km입니다.")
                     st.text(f"예상 소요 시간은 {duration}에요!")
                 else:
-                    ddf, route1, distance, duration, _ = route_core.s_to_d(start, dest, sel)
+                    ddf, route1, distance, duration = route_core.s_to_d(start, dest, sel)
                     m1 = route1.plot_route()
                     folium_static(m1)
                     st.text(f"거리는 {distance}km입니다.")
@@ -393,6 +396,15 @@ def main():
                 actor: str
                 payload: str
 
+            # 사용자 입력 받기
+            user = None
+            try:
+                user = auth.get_user_by_email(st.session_state["username"])
+            except auth.UserNotFoundError:
+                st.error("사용자를 찾을 수 없습니다.")
+
+            uid = user.uid
+
             # llm = ChatOpenAI(openai_api_key=os.environ["OPENAI_API_KEY"], model_name='gpt-3.5-turbo', temperature=0)
 
             USER = "user"
@@ -406,6 +418,7 @@ def main():
             msg: Message
             for msg in st.session_state[MESSAGES]:
                 st.chat_message(msg.actor).write(msg.payload)
+
 
             # Prompt
             query: str = st.chat_input("이곳에 질문을 입력하세요.")
@@ -489,7 +502,9 @@ def main():
             # ]
             # agent = initialize_agent(tools=tools, llm=llm, agent=AgentType.CHAT_ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
 
-            agent_executor = chatbot_core.agent()
+            agent_executor, memory = chatbot_core.agent()
+
+            data_core.main(memory)
 
             if query:
                 st.session_state[MESSAGES].append(Message(actor=USER, payload=str(query)))
