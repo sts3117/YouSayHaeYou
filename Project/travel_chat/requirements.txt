@@ -20,3 +20,4 @@ firebase-admin==6.5.0
 extra-streamlit-components==0.1.71
 email_validator==2.1.1
 langchainhub==0.1.15
+requests-toolbelt==1.0.0
