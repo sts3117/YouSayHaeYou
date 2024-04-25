@@ -16,7 +16,7 @@ from streamlit_folium import folium_static
 import chatbot_core
 import route_core
 from firebase_admin import auth
-import auth_core1
+import auth_core
 import data_core
 
 from langchain.chat_models import ChatOpenAI
@@ -42,7 +42,7 @@ st.set_page_config(page_title="travel assistant", layout="wide", page_icon="🛫
 
 # st.write(os.getcwd())
 with st.sidebar:
-    auth_core1.main()
+    auth_core.main()
 
 
 # if not api_key:
