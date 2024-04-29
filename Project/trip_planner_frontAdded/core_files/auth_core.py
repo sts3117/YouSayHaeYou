@@ -378,7 +378,7 @@ def login_form(preauthorized: Union[str, Sequence[str], None]) -> None:
         decoded_token = auth.verify_id_token(login_response["idToken"])
         user = auth.get_user(decoded_token["uid"])
         if not user.email_verified:
-            return st.error("이메일을 확인해주세요.")
+            return st.error("메일함을 확인해주세요.")
         # At last, authenticate the user
         st.session_state["name"] = user.display_name
         st.session_state["username"] = user.email
