@@ -17,6 +17,7 @@ from collections import OrderedDict
 
 TITLE: Final = "Personal Trip Planner"
 
+
 POST_REQUEST_URL_BASE: Final = "https://identitytoolkit.googleapis.com/v1/accounts:"
 post_request = partial(
     requests.post,
@@ -178,7 +179,12 @@ def parse_error_message(response: requests.Response) -> str:
 
 
 def main():
+    with st.sidebar:
+        st.image("imgs/logo.png")
+        
     if not firebase_admin._apps:
+        # col1, col2, col3 = st.columns([3, 4, 3])
+        
         cred_json = OrderedDict()
         cred_json["type"] = st.secrets["type"]  # 이렇게 값을 숨겨주는 게 좋다.
         cred_json["project_id"] = st.secrets["project_id"]
@@ -196,8 +202,7 @@ def main():
         js_dict = json.loads(js)
         cred = firebase_admin.credentials.Certificate(js_dict)
         firebase_admin.initialize_app(cred)
-    pretty_title(TITLE)
-
+    # pretty_title(TITLE)   
     # st.session_state["authentication_status"] = False
 
     if not_logged_in(preauthorized=("gmail.com", "naver.com")):
@@ -229,6 +234,7 @@ def pretty_title(title: str) -> None:
 
 
 def login_panel() -> None:
+    
     """Creates a side panel for logged-in users, preventing the login menu from
     appearing.
     Parameters
@@ -246,7 +252,8 @@ def login_panel() -> None:
     If the user clicks the "Logout" button, the reauthentication cookie and user-related information
     from the session state is deleted, and the user is logged out.
     """
-
+    # st.image("imgs\logo.png", width=250)
+    
     if st.button("로그아웃"):
         # cookie_manager.delete(cookie_name)
         st.session_state["name"] = None
