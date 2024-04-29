@@ -37,7 +37,7 @@ with st.sidebar:
 def main():
     if not st.session_state['authentication_status']:
         return
-
+    
     #sidebar menu
     with st.sidebar:
         # st.sidebar.title(f"Personal Trip Planner")
@@ -70,4 +70,5 @@ def main():
         route_page.route()
 
 if __name__ == '__main__':
+    
     main()

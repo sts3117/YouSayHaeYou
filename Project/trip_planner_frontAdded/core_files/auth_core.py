@@ -202,7 +202,7 @@ def main():
 
     if not_logged_in(preauthorized=("gmail.com", "naver.com")):
         return None
-    
+
     with st.sidebar:
         login_panel()
 
@@ -254,11 +254,11 @@ def login_panel() -> None:
         st.session_state["authentication_status"] = None
         st.rerun()
     st.write(f"환영합니다, {st.session_state['name']}님!")
-    user_tab1, user_tab2 = st.tabs(["비밀번호 재설정", "개인정보 변경"])
-    with user_tab1:
-        update_password_form()
-    with user_tab2:
-        update_display_name_form()
+    # user_tab1, user_tab2 = st.tabs(["비밀번호 재설정", "개인정보 변경"])
+    # with user_tab1:
+    #     update_password_form()
+    # with user_tab2:
+    #     update_display_name_form()
     return None
 
 
