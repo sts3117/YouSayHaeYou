@@ -179,12 +179,17 @@ def parse_error_message(response: requests.Response) -> str:
 
 
 def main():
+    st.markdown("""
+    <style>
+        [data-testid=stSidebar] {
+            background-color: #EBF1FF";
+        }
+    </style>
+    """, unsafe_allow_html=True)
     with st.sidebar:
         st.image("imgs/logo.png")
         
     if not firebase_admin._apps:
-        # col1, col2, col3 = st.columns([3, 4, 3])
-        
         cred_json = OrderedDict()
         cred_json["type"] = st.secrets["type"]  # 이렇게 값을 숨겨주는 게 좋다.
         cred_json["project_id"] = st.secrets["project_id"]
@@ -261,6 +266,7 @@ def login_panel() -> None:
         st.session_state["authentication_status"] = None
         st.rerun()
     st.write(f"환영합니다, {st.session_state['name']}님!")
+    st.markdown('---')
     # user_tab1, user_tab2 = st.tabs(["비밀번호 재설정", "개인정보 변경"])
     # with user_tab1:
     #     update_password_form()
@@ -385,7 +391,7 @@ def login_form(preauthorized: Union[str, Sequence[str], None]) -> None:
         decoded_token = auth.verify_id_token(login_response["idToken"])
         user = auth.get_user(decoded_token["uid"])
         if not user.email_verified:
-            return st.error("메일함을 확인해주세요.")
+            return st.error("이메일을 확인해주세요.")
         # At last, authenticate the user
         st.session_state["name"] = user.display_name
         st.session_state["username"] = user.email

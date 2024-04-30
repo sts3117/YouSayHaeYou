@@ -5,6 +5,7 @@ from streamlit_folium import folium_static
 from core_files import route_core
 
 def route():
+    st.markdown('---')
     col1, col2 = st.columns(2)
     with col1:
         start = st.text_input('어디에서 출발하시나요?:')

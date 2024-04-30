@@ -1,4 +1,5 @@
 import streamlit as st
+st.set_page_config(layout="wide")
 from streamlit_option_menu import option_menu
 
 from PIL import Image
@@ -7,6 +8,7 @@ import firebase_admin
 from firebase_admin import auth
 import json
 from collections import OrderedDict
+
 if not firebase_admin._apps:
     cred_json = OrderedDict()
     cred_json["type"] = st.secrets["type"]  # 이렇게 값을 숨겨주는 게 좋다.
@@ -29,56 +31,64 @@ from core_files import auth_core
 from core_files import data_core
 from page_lists import chat_page, db_page, route_page, search_page, auth_page, home_page
 
-# st.write(os.getcwd())
 # with st.sidebar:
-auth_core.main()
-
-
+col1, col2, col3 = st.columns([2,6,2])
+with col2:
+    auth_core.main()
 
 def main():
     if not st.session_state['authentication_status']:
         return
     
-    #sidebar menu
-    with st.sidebar:
-        # st.sidebar.title(f"Personal Trip Planner")
-        # st.write(f'Welcome *{st.session_state["name"]}*')
-        selected = option_menu(
-            key='option_menu_select',
-            menu_title = None,
-            options = ["홈", "계정", "검색", "챗봇", "데이터베이스", "길찾기"],
-            icons = ['house', 'person-circle','search', 'robot', 'book', 'map'],
-            default_index=0,
-            styles={
-            "container": {"padding": "0!important", "background-color": "#fafafa"},
-            "icon": {"color": "orange", "font-size": "15px"}, 
-            "nav-link": {"font-size": "15px", "text-align": "left", "margin":"0px", "--hover-color": "#FFC7BA"},
-            "nav-link-selected": {"background-color": "blue"},
-        })
+    # #sidebar menu
+    # with st.sidebar:
+    #     # st.sidebar.title(f"Personal Trip Planner")
+    #     # st.write(f'Welcome *{st.session_state["name"]}*')
+    #     selected = option_menu(
+    #         key='option_menu_select',
+    #         menu_title = None,
+    #         options = ["홈", "계정", "검색", "챗봇", "데이터베이스", "길찾기"],
+    #         icons = ['house', 'person-circle','search', 'robot', 'book', 'map'],
+    #         default_index=0,
+    #         styles={
+    #         "container": {"padding": "0!important", "background-color": "#fafafa"},
+    #         "icon": {"color": "orange", "font-size": "15px"}, 
+    #         "nav-link": {"font-size": "15px", "text-align": "left", "margin":"0px", "--hover-color": "#FFC7BA"},
+    #         "nav-link-selected": {"background-color": "blue"},
+    #     })
     
-    if selected=='홈' :
-        st.title(f'{selected}')
+    selected_top = option_menu(
+        key='option_menu_select_top',
+        menu_title = None,
+        options = ["홈", "계정", "검색", "챗봇", "DB", "길찾기"],
+        icons = ['house', 'person-circle','search', 'robot', 'book', 'map'],
+        default_index=0,
+        orientation="horizontal",
+        styles={
+        "container": {"padding": "0!important", "background-color": "#EBF1FF"},
+        "icon": {"color": "#EA8210", "font-size": "15px", "text-align":"center"}, 
+        "nav-link": {"font-size": "20px", "text-align": "center", "margin":"0px", "--hover-color": "#FFC7BA"},
+        "nav-link-selected": {"background-color": "#10444C"},
+    })
+
+    if selected_top=='홈' :
         home_page.home()
-    if selected=='계정':
-        st.title(f'{selected}')
+    if  selected_top=='계정':
+        st.subheader("비밀번호 재설정/개인정보변경")
         auth_page.main()
-    if selected=="검색":
-        st.title(f"{selected}")
+    if selected_top=="검색":
+        st.subheader("사이드바에 정보를 채워 검색을 해보세요")
         search_page.createPage()
-    if selected=="챗봇":
-        st.title(f"{selected}")
+    if selected_top=="챗봇":
+        st.subheader("가고싶은 곳에 대해 질문해보세요")
         chat_page.createPage()
-    if selected=="데이터베이스":
-        st.title(f"{selected}")
+    if selected_top=="DB":
+        st.subheader("가고 싶은 지역을 선택해서 질문하면 내부 DB로 검색해드려요")
         db_page.createPage()
-    if selected=="길찾기" :
-        st.title(f"{selected}🗺️")
+    if selected_top=="길찾기" :
+        st.subheader("가고 싶은 곳까지의 경로를 찾아보세요")
         route_page.route()
         
-    
-    
-    
-
     js = '''
         <script>
             var body = window.parent.document.querySelector(".main");

@@ -11,7 +11,7 @@ import datetime
 from PIL import Image
 from streamlit_autorefresh import st_autorefresh
 
-st.set_page_config(layout="wide")
+# st.set_page_config(layout="wide")
 load_dotenv()
 
 os.environ["GOOGLE_MAP_API_KEY"] = st.secrets["GOOGLE_MAP_API_KEY"]
@@ -53,9 +53,7 @@ def get_current_temperature(latitude: float, longitude: float) -> dict:
 
 
 def createPage():
-    #css 스타일 적용
-    with open('style.css') as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    
 
     #tab 생성
     detail_tab, db_tab = st.tabs(['Detail', 'Data'])
@@ -66,7 +64,6 @@ def createPage():
     os.environ["GOOGLE_MAP_API_KEY"] = st.secrets["GOOGLE_MAP_API_KEY"]
     os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
     
-    st.sidebar.markdown("---")
     st.sidebar.write('아래 내용을 모두 채워주세요.')
     destination = st.sidebar.text_input('어느 지역으로 가시나요?:', key='destination_app')
     min_rating = st.sidebar.number_input('최소 별점은 얼마로 할까요?:', value=4.0, min_value=0.5, max_value=4.5, step=0.5,
