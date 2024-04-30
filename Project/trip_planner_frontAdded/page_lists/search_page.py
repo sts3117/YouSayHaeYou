@@ -10,6 +10,7 @@ import pandas as pd
 import datetime 
 from PIL import Image
 from streamlit_autorefresh import st_autorefresh
+from streamlit_extras.stylable_container import stylable_container
 
 # st.set_page_config(layout="wide")
 load_dotenv()
@@ -345,22 +346,39 @@ def createPage():
                                 styled_text3 = f"""
                                 <div style='text-align: left;'>
                                     <div style='background-color:#f0f0f0; padding:10px; border-radius:10px;'>
+                                        <br>
                                         <p style='font-size:20px; margin:0; '><b>📌 평점: {row['rating']}</b></p>
                                         <br>
                                         <p style='font-size:20px; margin:0;'><b>📌 주소: {row['formattedAddress']}</b></p>
                                         <br>
-                                        <p style='font-size:20px; margin:0;'><b>📌 웹사이트: 
-                                            <a herf= {row['websiteUri']}> 공식 홈페이지 </a> 
-                                            </b></p>
-                                        <br>
-                                        <p style='font-size:20px; margin:0;'><b>📌 추가적인 정보: 
-                                            <a herf= {row['googleMapsUri']}> 지도에서 확인하기 </a>
-                                            </b></p>
                                     </div>
                                 </div>
                                 """
                                 st.markdown(styled_text3, unsafe_allow_html=True)
+                                url = row['websiteUri']
+                                url2 = row['googleMapsUri']
+                                print(url)
+                                print(url2)
                                 
+                                with stylable_container(
+                                    key="website_container",
+                                    css_styles="""
+                                        {
+                                            border: 1px solid rgba(49, 51, 63, 0.2);
+                                            border-radius: 0.5rem;
+                                            padding: calc(1em - 1px)
+                                        }
+                                        """,
+                                ):
+                                    if str(url) != 'nan':
+                                        # st.write("check out this [link](%s)" % url)
+                                        st.markdown(f'<p style="font-size:20px; margin:0;"><b>📌웹사이트: <a href="{url}">공식 홈페이지 </a></b></p>', unsafe_allow_html=True) 
+                                    st.markdown('')
+                                    if str(url2) != 'nan':
+                                        # st.write("check out this [link](%s)" % url)
+                                        st.markdown(f'<p style="font-size:20px; margin:0;"><b>📌추가적인 정보: <a href="{url2}">지도에서 확인하기 </a></b></p>', unsafe_allow_html=True) 
+                                        st.markdown('')
+                            
                             st.markdown("---")
 
 
@@ -400,25 +418,42 @@ def createPage():
                                 styled_text3 = f"""
                                 <div style='text-align: left;'>
                                     <div style='background-color:#f0f0f0; padding:10px; border-radius:10px;'>
+                                        <br>
                                         <p style='font-size:20px; margin:0; '><b>📌 평점: {row['rating']}</b></p>
                                         <br>
                                         <p style='font-size:20px; margin:0;'><b>📌 주소: {row['formattedAddress']}</b></p>
                                         <br>
-                                        <p style='font-size:20px; margin:0;'><b>📌 웹사이트: 
-                                            <a herf= {row['websiteUri']}> 공식 홈페이지 </a> 
-                                            </b></p>
-                                        <br>
-                                        <p style='font-size:20px; margin:0;'><b>📌 추가적인 정보: 
-                                            <a herf= {row['googleMapsUri']}> 지도에서 확인하기 </a>
-                                            </b></p>
                                     </div>
                                 </div>
                                 """
                                 st.markdown(styled_text3, unsafe_allow_html=True)
+                                url = row['websiteUri']
+                                url2 = row['googleMapsUri']
+                                print(url)
+                                print(url2)
+                                with stylable_container(
+                                    key="website_container",
+                                    css_styles="""
+                                        {
+                                            border: 1px solid rgba(49, 51, 63, 0.2);
+                                            border-radius: 0.5rem;
+                                            padding: calc(1em - 1px)
+                                        }
+                                        """,
+                                ):
+                                    if str(url) != 'nan':
+                                        # st.write("check out this [link](%s)" % url)
+                                        st.markdown(f'<p style="font-size:20px; margin:0;"><b>📌웹사이트: <a href="{url}">공식 홈페이지 </a></b></p>', unsafe_allow_html=True) 
+                                    st.markdown('')
+                                    if str(url2) != 'nan':
+                                        # st.write("check out this [link](%s)" % url)
+                                        st.markdown(f'<p style="font-size:20px; margin:0;"><b>📌추가적인 정보: <a href="{url2}">지도에서 확인하기 </a></b></p>', unsafe_allow_html=True) 
+                                        st.markdown('')
+                                    
                                 
                             st.markdown("---")
                             
-                else:
+                else:   # 여행지
                     df_place = df_tourist1
                     with st.spinner("잠시만 기다려주세요..."):
                         for index, row in df_place.iterrows():
@@ -454,22 +489,39 @@ def createPage():
                                 styled_text3 = f"""
                                 <div style='text-align: left;'>
                                     <div style='background-color:#f0f0f0; padding:10px; border-radius:10px;'>
+                                        <br>
                                         <p style='font-size:20px; margin:0; '><b>📌 평점: {row['rating']}</b></p>
                                         <br>
                                         <p style='font-size:20px; margin:0;'><b>📌 주소: {row['formattedAddress']}</b></p>
                                         <br>
-                                        <p style='font-size:20px; margin:0;'><b>📌 웹사이트: 
-                                            <a herf= {row['websiteUri']}> 공식 홈페이지 </a> 
-                                            </b></p>
-                                        <br>
-                                        <p style='font-size:20px; margin:0;'><b>📌 추가적인 정보: 
-                                            <a herf= {row['googleMapsUri']}> 지도에서 확인하기 </a>
-                                            </b></p>
                                     </div>
                                 </div>
                                 """
                                 st.markdown(styled_text3, unsafe_allow_html=True)
-                                
+                                url = row['websiteUri']
+                                url2 = row['googleMapsUri']
+                                print(url)
+                                print(url2)
+                                with stylable_container(
+                                    key="website_container",
+                                    css_styles="""
+                                        {
+                                            border: 1px solid rgba(49, 51, 63, 0.2);
+                                            border-radius: 0.5rem;
+                                            padding: calc(1em - 1px)
+                                        }
+                                        """,
+                                ):
+                                    if str(url) != 'nan':
+                                        # st.write("check out this [link](%s)" % url)
+                                        st.markdown(f'<p style="font-size:20px; margin:0;"><b>📌웹사이트: <a href="{url}">공식 홈페이지 </a></b></p>', unsafe_allow_html=True) 
+                                    st.markdown('')
+                                    if str(url2) != 'nan':
+                                        # st.write("check out this [link](%s)" % url)
+                                        st.markdown(f'<p style="font-size:20px; margin:0;"><b>📌추가적인 정보: <a href="{url2}">지도에서 확인하기 </a></b></p>', unsafe_allow_html=True) 
+                                        st.markdown('')
+                                    
+                                                                   
                             st.markdown("---")
             
             #실행                
