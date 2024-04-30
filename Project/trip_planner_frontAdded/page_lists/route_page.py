@@ -33,32 +33,39 @@ def route():
     # folium_static(mymap)
     
     col1, col2 = st.columns([5.5, 4.5])
-    if btn:
-        row2.subheader(f"'{start}'에서 '{dest}'까지 {sel} 가는 경로입니다")
-        
-        if sel == '대중교통으로':
-            st.markdown('---')
+    try:
+        if btn:
+            row2.subheader(f"'{start}'에서 '{dest}'까지 {sel} 가는 경로입니다")
             
-            ddf, route1, distance, duration, start_point = route_core.s_to_d(start, dest, sel)
-            m1 = route_core.draw_route_on_folium(ddf, start_point)
-            
-        else:
-            ddf, route1, distance, duration = route_core.s_to_d(start, dest, sel)
-            # st.subheader(f"{start}에서 {dest}까지 {sel} 가는 경로입니다")
-            m1 = route1.plot_route()
-            
-        with col2:
-            info_style = f"""
-            <div style='text-align: left;'>
-                <div style='background-color:#f0f0f0; padding:10px; border-radius:10px;'>
-                    <p style='font-size:20px; margin:0; '><b>📌거리는 {distance}km입니다.</b></p>
-                    <br>
-                    <p style='font-size:20px; margin:0;'><b>📌 예상 소요 시간은 {duration}에요!</b></p>
-                    <br>
+            if sel == '대중교통으로':
+                st.markdown('---')
+                
+                ddf, route1, distance, duration, start_point = route_core.s_to_d(start, dest, sel)
+                m1 = route_core.draw_route_on_folium(ddf, start_point)
+                
+            else:
+                ddf, route1, distance, duration = route_core.s_to_d(start, dest, sel)
+                # st.subheader(f"{start}에서 {dest}까지 {sel} 가는 경로입니다")
+                m1 = route1.plot_route()
+                
+                
+                    
+                
+            with col2:
+                info_style = f"""
+                <div style='text-align: left;'>
+                    <div style='background-color:#f0f0f0; padding:10px; border-radius:10px;'>
+                        <p style='font-size:20px; margin:0; '><b>📌거리는 {distance}km입니다.</b></p>
+                        <br>
+                        <p style='font-size:20px; margin:0;'><b>📌 예상 소요 시간은 {duration}에요!</b></p>
+                        <br>
+                    </div>
                 </div>
-            </div>
-            """
-            st.markdown(info_style, unsafe_allow_html=True)
-            
-    with col1:
-        folium_static(m1)
+                """
+                st.markdown(info_style, unsafe_allow_html=True)
+                
+        with col1:
+            folium_static(m1)
+    except:
+        st.write(f"'{sel}' 방식은 아직 지원하지 않아요! ")
+        st.write(f"준비중인 기능입니다")
