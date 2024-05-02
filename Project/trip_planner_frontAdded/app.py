@@ -1,11 +1,13 @@
 import streamlit as st
-st.set_page_config(layout="wide")
+
+st.set_page_config(page_title="Personal Trip Planner", layout="wide", page_icon="🛫", menu_items={
+        'About': "이 app은 여러분들의 여행을 도와줄 거에요!"
+    })
 from streamlit_option_menu import option_menu
 import firebase_admin
 import json
 from collections import OrderedDict
 import hydralit_components as hc
-
 
 if not firebase_admin._apps:
     cred_json = OrderedDict()
@@ -21,7 +23,7 @@ if not firebase_admin._apps:
     cred_json["client_x509_cert_url"] = st.secrets["client_x509_cert_url"]
     cred_json["universe_domain"] = st.secrets["universe_domain"]
 
-    js = json.dumps(cred_json)  
+    js = json.dumps(cred_json)
     js_dict = json.loads(js)
     cred = firebase_admin.credentials.Certificate(js_dict)
     firebase_admin.initialize_app(cred)
@@ -30,62 +32,61 @@ from page_lists import chat_page, db_page, route_page, search_page, auth_page, h
 
 auth_core.main()
 
+
 def main():
     if not st.session_state['authentication_status']:
         return
-    
+
     # specify the primary menu definition
     menu_data = [
-        {'icon': "🪪", 'label':"계정설정"},
-        {'icon':"🔎",'label':"검색"},
-        {'icon': "📋", 'label':"챗봇"},#no tooltip message
-        {'icon': "📝", 'label':"DB"},
-        {'icon': "🗺️", 'label':"길찾기"},
+        {'icon': "🛠", 'label': "계정설정"},
+        {'icon': "🔎", 'label': "검색"},
+        {'icon': "📋", 'label': "챗봇"},  # no tooltip message
+        {'icon': "📝", 'label': "DB"},
+        {'icon': "🗺️", 'label': "길찾기"},
     ]
 
-    over_theme = {'txc_inactive': '#FFFFFF', 'menu_background':'#00B622'}
+    over_theme = {'txc_inactive': '#FFFFFF', 'menu_background': '#00B622'}
     page = hc.nav_bar(
         menu_definition=menu_data,
         override_theme=over_theme,
         home_name='홈',
-        hide_streamlit_markers=True, #will show the st hamburger as well as the navbar now!
-        sticky_nav=True, #at the top or not
-        sticky_mode='pinned', #jumpy or not-jumpy, but sticky or pinned
+        hide_streamlit_markers=True,  # will show the st hamburger as well as the navbar now!
+        sticky_nav=True,  # at the top or not
+        sticky_mode='pinned',  # jumpy or not-jumpy, but sticky or pinned
     )
-    
-        
-    if page=='홈' :
+
+    if page == '홈':
         home_page.home()
-    if  page=='계정설정':
+    if page == '계정설정':
         st.subheader("비밀번호 재설정/개인정보변경")
         auth_page.main()
-    if page=="검색":
+    if page == "검색":
         st.subheader("사이드바에 정보를 채워 검색을 해보세요")
         search_page.createPage()
-        
-    if page=="챗봇":
+
+    if page == "챗봇":
         st.subheader("가고싶은 곳에 대해 질문해보세요")
         chat_page.createPage()
-        
-    if page=="DB":
+
+    if page == "DB":
         st.subheader("가고 싶은 지역을 선택해서 질문하면 내부 DB로 검색해드려요")
         db_page.createPage()
-    if page=="길찾기" :
+    if page == "길찾기":
         st.subheader("가고 싶은 곳까지의 경로를 찾아보세요")
         route_page.route()
-        
-            
+
     js = '''
         <script>
             var body = window.parent.document.querySelector(".main");
             console.log(body);
             body.scrollTop = 0;
-            
+
         </script>
         '''
-        
+
     st.markdown('---')
-    
+
     if st.button(f"▲ TOP"):
         st.components.v1.html(js)
 
