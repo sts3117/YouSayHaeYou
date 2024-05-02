@@ -9,7 +9,6 @@ from streamlit_folium import folium_static
 import pandas as pd
 import datetime 
 from PIL import Image
-from streamlit_autorefresh import st_autorefresh
 from streamlit_extras.stylable_container import stylable_container
 
 # st.set_page_config(layout="wide")

@@ -14,6 +14,8 @@ import streamlit as st
 from email_validator import EmailNotValidError, validate_email
 from firebase_admin import auth
 from collections import OrderedDict
+from streamlit_extras.stylable_container import stylable_container
+
 
 TITLE: Final = "Personal Trip Planner"
 
@@ -179,15 +181,7 @@ def parse_error_message(response: requests.Response) -> str:
 
 
 def main():
-    st.markdown("""
-    <style>
-        [data-testid=stSidebar] {
-            background-color: #EBF1FF";
-        }
-    </style>
-    """, unsafe_allow_html=True)
-    with st.sidebar:
-        st.image("imgs/logo.png")
+    
         
     if not firebase_admin._apps:
         cred_json = OrderedDict()
@@ -210,10 +204,20 @@ def main():
     # pretty_title(TITLE)   
     # st.session_state["authentication_status"] = False
 
+    
     if not_logged_in(preauthorized=("gmail.com", "naver.com")):
         return None
 
+    
     with st.sidebar:
+        st.markdown("""
+        <style>
+            [data-testid=stSidebar] {
+                background-color: #EBF1FF";
+            }
+        </style>
+        """, unsafe_allow_html=True)
+        st.image("imgs/logo.png")
         login_panel()
 
 
@@ -326,26 +330,49 @@ def not_logged_in(preauthorized: Union[str, Sequence[str], None] = None) -> bool
             set(st.session_state)
     ):
         st.session_state[key] = None
+    
+    placeholder = st.empty()
+    
+    with placeholder.container():
+        col3, col4, col5 = st.columns([2,6,2])
+        with col4:
+            st.subheader("Welcome to Ali-me")
+            with stylable_container(
+                key='login_container',
+                css_styles="""{
+                    border: 3px solid rgba(49, 51, 63, 0.2);
+                    border-radius: 0.5rem;
+                    padding: 50px
+                }"""
+            ):
+                col1, col2= st.columns([4,6])
+                with col1:
+                    login_tabs = st.empty()
+                with col2:
+                    st.image('imgs\logo.png', width=600)
+        
+        
+        with login_tabs:
+            login_tab1, login_tab2, login_tab3 = st.tabs(
+                ["로그인", "회원 가입", "비밀번호 찾기"]
+            )
+            with login_tab1:
+                login_form(preauthorized)
+            with login_tab2:
+                register_user_form(preauthorized)
+            with login_tab3:
+                forgot_password_form(preauthorized)
 
-    login_tabs = st.empty()
-    with login_tabs:
-        login_tab1, login_tab2, login_tab3 = st.tabs(
-            ["로그인", "회원 가입", "비밀번호 찾기"]
-        )
-        with login_tab1:
-            login_form(preauthorized)
-        with login_tab2:
-            register_user_form(preauthorized)
-        with login_tab3:
-            forgot_password_form(preauthorized)
-
-    auth_status = st.session_state["authentication_status"]
-    if auth_status is False:
-        st.error("이름 또는 비밀번호가 틀렸습니다.")
-        return early_return
-    if auth_status is None:
-        return early_return
-    login_tabs.empty()
+        auth_status = st.session_state["authentication_status"]
+        if auth_status is False:
+            st.error("이름 또는 비밀번호가 틀렸습니다.")
+            return early_return
+        if auth_status is None:
+            return early_return
+        
+        # login_tabs.empty()
+        placeholder.empty()
+    
     # A workaround for a bug in Streamlit -
     # https://playground.streamlit.app/?q=empty-doesnt-work
     # TLDR: element.empty() doesn't actually seem to work with a multi-element container
