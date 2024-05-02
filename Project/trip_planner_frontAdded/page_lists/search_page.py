@@ -11,6 +11,8 @@ import datetime
 from PIL import Image
 from streamlit_extras.stylable_container import stylable_container
 
+from core_files import data_core
+
 # st.set_page_config(layout="wide")
 load_dotenv()
 
@@ -530,6 +532,11 @@ def createPage():
 
         with db_tab:
             database()
+            if st.button(f"업로드"):
+                data_core.database_save(df_place_rename)
+            country = st.text_input(f"삭제할 나라를 입력해주세요.", placeholder="나라명 또는 주소로 삭제 가능")
+            if st.button(f"삭제"):
+                data_core.database_delete_with_country(country)
     else:
         left_co, cent_co, last_co = st.columns(3)
         with cent_co:
