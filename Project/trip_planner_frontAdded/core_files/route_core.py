@@ -52,6 +52,16 @@ def s_to_d(start, dest, sel):
 
     # Request directions via public transit
     now = datetime.now()
+    # directions_result = gmaps.directions("Sydney Town Hall",
+    #                                      "Parramatta, NSW",
+    #                                      mode="transit",
+    #                                      departure_time=now)
+    #
+    # # Validate an address with address validation
+    # addressvalidation_result = gmaps.addressvalidation(['1600 Amphitheatre Pk'],
+    #                                                    regionCode='US',
+    #                                                    locality='Mountain View',
+    #                                                    enableUspsCass=True)
 
     if sel == '차로':
         mode = "driving"
