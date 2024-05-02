@@ -1,10 +1,13 @@
-from firebase_admin import firestore, auth
-from google.cloud.firestore_v1 import aggregation
-from google.cloud.firestore_v1.base_query import FieldFilter
 from pydantic import BaseModel
 import streamlit as st
 import re
+import pandas as pd
+import json
 from datetime import datetime
+
+from firebase_admin import firestore, auth
+from google.cloud.firestore_v1 import aggregation
+from google.cloud.firestore_v1.base_query import FieldFilter
 
 db = firestore.client()
 
@@ -81,18 +84,7 @@ def save_chat_message():
             "actor": st.session_state["messages"][i].actor,
             "timestamp": timestamp
         }
-        db.collection("chats").document(st.session_state["name"] + str(0) + str(i)).set(chat_data)
-
-
-# def imsi():
-#     st.title("과거 채팅 기록 불러오기")
-#
-#     chat_history = load_chat_history()
-#
-#     # 과거 채팅 기록 출력
-#     st.write("과거 채팅 기록:")
-#     for chat in chat_history:
-#         st.write(f"{chat['timestamp']} - {chat['user']}: {chat['message']}")
+        db.collection("chats").document(st.session_state["name"] + str('{:02d}'.format(i))).set(chat_data)
 
 
 def delete_chat_message(memory):
@@ -106,24 +98,10 @@ def delete_chat_message(memory):
     count = re.search(r'value=(\d+)', str(count)).group(1)
 
     for i in range(int(count)):
-        db.collection("chats").document(st.session_state["name"] + str(0) + str(i)).delete()
+        db.collection("chats").document(st.session_state["name"] + str('{:02d}'.format(i))).delete()
 
     st.session_state["messages"] = []
     memory.aclear()
-
-
-# def save_button(email, uid):
-#     st.title("채팅 기록 저장 및 불러오기")
-#
-#     message = st.text_area("메시지를 입력하세요:")
-#
-#     # '전송' 버튼 클릭 시 채팅 저장
-#     if st.button("저장"):
-#         if uid.strip() != "" and message.strip() != "":
-#             save_chat_message(uid, message)
-#             st.success("채팅이 저장되었습니다!")
-#         else:
-#             st.error("사용자 UID 또는 메시지가 비어있습니다.")
 
 
 def main(memory):
@@ -164,3 +142,23 @@ def main(memory):
                 st.success("성공적으로 삭제되었습니다.")
             except Exception as e:
                 st.error("삭제 실패: ", e)
+
+
+def database_save(df):
+    for index, row in df.iterrows():
+        query = db.collection("city").where("Name", "==", row["Name"]).limit(1).get()
+        existing_docs = [doc for doc in query]
+        if not existing_docs:
+            doc_ref = db.collection("city").document()
+            doc_ref.set(row.to_dict())
+            st.success(f'Document {doc_ref.id} 업로드 완료')
+        else:
+            st.warning(f'{row["Name"]} 문서가 이미 존재합니다. 무시합니다.')
+
+
+def database_delete_with_country(country):
+    query = db.collection("city").stream()
+    result = [doc for doc in query if country in doc.to_dict()["Address"]]
+    for doc in result:
+        doc.reference.delete()
+        st.success(f'Document {doc.id} 삭제 완료')
