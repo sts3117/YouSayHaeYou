@@ -16,9 +16,7 @@ from firebase_admin import auth
 from collections import OrderedDict
 from streamlit_extras.stylable_container import stylable_container
 
-
 TITLE: Final = "Personal Trip Planner"
-
 
 POST_REQUEST_URL_BASE: Final = "https://identitytoolkit.googleapis.com/v1/accounts:"
 post_request = partial(
@@ -26,6 +24,7 @@ post_request = partial(
     headers={"content-type": "application/json; charset=UTF-8"},
     timeout=10,
 )
+
 
 def authenticate_user(
         email: str, password: str, require_email_verification: bool = True
@@ -181,8 +180,6 @@ def parse_error_message(response: requests.Response) -> str:
 
 
 def main():
-    
-        
     if not firebase_admin._apps:
         cred_json = OrderedDict()
         cred_json["type"] = st.secrets["type"]  # 이렇게 값을 숨겨주는 게 좋다.
@@ -201,14 +198,12 @@ def main():
         js_dict = json.loads(js)
         cred = firebase_admin.credentials.Certificate(js_dict)
         firebase_admin.initialize_app(cred)
-    # pretty_title(TITLE)   
+    # pretty_title(TITLE)
     # st.session_state["authentication_status"] = False
 
-    
     if not_logged_in(preauthorized=("gmail.com", "naver.com")):
         return None
 
-    
     with st.sidebar:
         st.markdown("""
         <style>
@@ -243,7 +238,6 @@ def pretty_title(title: str) -> None:
 
 
 def login_panel() -> None:
-    
     """Creates a side panel for logged-in users, preventing the login menu from
     appearing.
     Parameters
@@ -262,7 +256,7 @@ def login_panel() -> None:
     from the session state is deleted, and the user is logged out.
     """
     # st.image("imgs\logo.png", width=250)
-    
+
     if st.button("로그아웃"):
         # cookie_manager.delete(cookie_name)
         st.session_state["name"] = None
@@ -330,28 +324,27 @@ def not_logged_in(preauthorized: Union[str, Sequence[str], None] = None) -> bool
             set(st.session_state)
     ):
         st.session_state[key] = None
-    
+
     placeholder = st.empty()
-    
+
     with placeholder.container():
-        col3, col4, col5 = st.columns([2,6,2])
+        col3, col4, col5 = st.columns([2, 6, 2])
         with col4:
             st.subheader("Welcome to Ali-me")
             with stylable_container(
-                key='login_container',
-                css_styles="""{
+                    key='login_container',
+                    css_styles="""{
                     border: 3px solid rgba(49, 51, 63, 0.2);
                     border-radius: 0.5rem;
                     padding: 50px
                 }"""
             ):
-                col1, col2= st.columns([4,6])
+                col1, col2 = st.columns([4, 6])
                 with col1:
                     login_tabs = st.empty()
                 with col2:
                     st.image('imgs\logo.png', width=600)
-        
-        
+
         with login_tabs:
             login_tab1, login_tab2, login_tab3 = st.tabs(
                 ["로그인", "회원 가입", "비밀번호 찾기"]
@@ -369,10 +362,10 @@ def not_logged_in(preauthorized: Union[str, Sequence[str], None] = None) -> bool
             return early_return
         if auth_status is None:
             return early_return
-        
+
         # login_tabs.empty()
         placeholder.empty()
-    
+
     # A workaround for a bug in Streamlit -
     # https://playground.streamlit.app/?q=empty-doesnt-work
     # TLDR: element.empty() doesn't actually seem to work with a multi-element container
