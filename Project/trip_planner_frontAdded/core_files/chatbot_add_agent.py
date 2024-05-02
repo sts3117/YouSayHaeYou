@@ -121,7 +121,7 @@ def sms_or_email():
     class EmailInput(BaseModel):
         body: str = Field(description="Email body text")
         to: str = Field(description="Email address to send to. Example: email@example.com")
-        sender: str = Field(description="Email address to send from, must be 'imsi@imsi.com'")
+        sender: str = Field(description="Email address to send from, must be 'imsitravel127841278@gmail.com'")
         subject: str = Field(description="Email subject")
         channel: str = Field(description="Email channel, must be 'email'")
 
