@@ -178,3 +178,23 @@ def main(memory):
                 st.success("성공적으로 삭제되었습니다.")
             except Exception as e:
                 st.error("삭제 실패: ", e)
+
+
+def database_save(df):
+    for index, row in df.iterrows():
+        query = db.collection("city").where("Name", "==", row["Name"]).limit(1).get()
+        existing_docs = [doc for doc in query]
+        if not existing_docs:
+            doc_ref = db.collection("city").document()
+            doc_ref.set(row.to_dict())
+            st.success(f'Document {doc_ref.id} 업로드 완료')
+        else:
+            st.warning(f'{row["Name"]} 문서가 이미 존재합니다. 무시합니다.')
+
+
+def database_delete_with_country(country):
+    query = db.collection("city").stream()
+    result = [doc for doc in query if country in doc.to_dict()["Address"]]
+    for doc in result:
+        doc.reference.delete()
+        st.success(f'Document {doc.id} 삭제 완료')
