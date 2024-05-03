@@ -1,5 +1,4 @@
 import streamlit as st
-import asyncio
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
@@ -17,8 +16,6 @@ import core_files.chatbot_core as chatbot_core
 import core_files.data_core as data_core
 from firebase_admin import auth
 import pandas as pd
-
-
 from langchain_community.callbacks.streamlit import StreamlitCallbackHandler
 
 os.environ["GOOGLE_MAP_API_KEY"] = st.secrets["GOOGLE_MAP_API_KEY"]
@@ -26,14 +23,33 @@ os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 url = 'https://places.googleapis.com/v1/places:searchText'
 
 
-
 def createPage():
+    st.markdown('')
+    history, col4 = st.columns(2)
+    with history:
+        agent_executor, memory = chatbot_core.agent()
+        data_core.main(memory)
+    
+    with col4:
+        placeholer= st.container()
+        with placeholer:
+            col1, col2, col3 = st.columns([6, 1, 1])
+            with col2:
+                rerun_btn = st.button('Rerun', key='rerun')
+            with col3:
+                stop_btn = st.button('Stop', key='stop')
+        
+        if rerun_btn:
+            st.rerun()
+        if stop_btn:
+            st.stop()
+    
+    
     class Message(BaseModel):
         actor: str
         payload: str
 
-    # llm = ChatOpenAI(openai_api_key=os.environ["OPENAI_API_KEY"], model_name='gpt-3.5-turbo', temperature=0)
-
+  
     USER = "user"
     ASSISTANT = "ai"
     MESSAGES = "messages"
@@ -46,15 +62,17 @@ def createPage():
     for msg in st.session_state[MESSAGES]:
         st.chat_message(msg.actor).write(msg.payload)
 
+
     # Prompt
     query: str = st.chat_input("이곳에 질문을 입력하세요.")
 
- 
+  
+    # agent_executor, memory = chatbot_core.agent()
 
-    agent_executor, memory = chatbot_core.agent()
+    # data_core.main(memory)
 
-    data_core.main(memory)
-
+    
+    
     if query:
         st.session_state[MESSAGES].append(Message(actor=USER, payload=str(query)))
         st.chat_message(USER).write(query)
@@ -65,6 +83,8 @@ def createPage():
             output_message = response.get("output", "")
             output_message_str = str(output_message)
             st.session_state[MESSAGES].append(Message(actor=ASSISTANT, payload=output_message_str))
-            st.write(response["output"])
+            st.write(response["output"])    
 
   
+        
+        
