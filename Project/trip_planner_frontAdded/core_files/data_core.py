@@ -86,17 +86,6 @@ def save_chat_message():
         db.collection("chats").document(st.session_state["name"] + str(0) + str(i)).set(chat_data)
 
 
-# def imsi():
-#     st.title("과거 채팅 기록 불러오기")
-#
-#     chat_history = load_chat_history()
-#
-#     # 과거 채팅 기록 출력
-#     st.write("과거 채팅 기록:")
-#     for chat in chat_history:
-#         st.write(f"{chat['timestamp']} - {chat['user']}: {chat['message']}")
-
-
 def delete_chat_message(memory):
     collection_ref = db.collection("chats")
     query = collection_ref.where(filter=FieldFilter("user_name", "==", st.session_state["name"]))
