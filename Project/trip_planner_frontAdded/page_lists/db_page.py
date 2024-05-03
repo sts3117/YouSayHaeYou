@@ -21,6 +21,7 @@ from langchain.chains import create_retrieval_chain
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+gif_path = f"imgs/loading-resize.gif"
 
 # pdf 파일을 읽어서 벡터 저장소에 저장
 def load_pdf_to_vector_store(pdf_file, chunk_size=1000, chunk_overlap=100):
@@ -60,7 +61,7 @@ def retrieve_and_generate_answers(vectorstore, message, temperature=0):
     prompt = ChatPromptTemplate.from_template(template)
 
      # ChatModel 인스턴스 생성
-    model = ChatOpenAI(model='gpt-3.5-turbo-0125', 
+    model = ChatOpenAI(model='gpt-4-turbo', 
                        temperature=temperature,
                        api_key=os.environ["OPENAI_API_KEY"])
 
@@ -84,7 +85,7 @@ def location_analysis(file_path, message):
     print(ans)
     return ans
 
-# 로딩화면 애니메이션
+# 로딩화면 애니메이션(lottie)
 def render_animation():
     animation_response = requests.get('https://lottie.host/702e6d74-eeb5-428a-8efc-9f65b908f9ef/BdmkfpJjjh.json')
     animation_json = dict()
@@ -115,16 +116,11 @@ def createPage():
             submit = form.form_submit_button('Submit')
 
             if submit:
+                gif_runner = st.image(gif_path)
                 ans = location_analysis(file_path, message)
-                progress_text = "Operation in progress. Please wait."
-                my_bar = st.progress(0, text=progress_text)
-                render_animation()
-                for percent_complete in range(100):
-                    time.sleep(0.01)
-                    my_bar.progress(percent_complete + 1, text=progress_text)
-                time.sleep(5)
-                my_bar.empty()
-                st.success("로딩완료!")
+                
+                st.success("알맞은 답을 찾았어요")
+                gif_runner.empty()
                 
                 st.subheader("답변")
                 form = st.form(key='answer-form')
