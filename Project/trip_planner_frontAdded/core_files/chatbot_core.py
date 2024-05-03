@@ -1,4 +1,6 @@
 import asyncio
+
+import google.generativeai
 from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser, create_react_agent
 from langchain.prompts import StringPromptTemplate
 from langchain import SerpAPIWrapper, LLMChain
@@ -23,7 +25,7 @@ from langchain.cache import MomentoCache
 import hashlib
 from gptcache import Cache
 from gptcache.adapter.api import init_similar_cache
-from langchain.cache import GPTCache
+from langchain.cache import GPTCache, InMemoryCache
 from gptcache.embedding.langchain import LangChain
 from langchain.globals import set_llm_cache
 from langchain_openai import OpenAIEmbeddings
@@ -42,7 +44,7 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.callbacks.base import AsyncCallbackHandler, BaseCallbackHandler
 
 # os.environ["OPENAI_API_KEY"] = "<openai-key>"
-# os.environ["GOOGLE_API_KEY"]
+# os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 os.environ["AMADEUS_CLIENT_ID"] = st.secrets["AMADEUS_CLIENT_ID"]
 os.environ["AMADEUS_CLIENT_SECRET"] = st.secrets["AMADEUS_CLIENT_SECRET"]
 
@@ -119,6 +121,9 @@ where: It is about traveling abroad or domestically, if user wants to move withi
 oneway: It is about whether the user wants to travel one way or round trip, if user wants to travel one way it has to be: one, , if it is not it has to be: round
 연도가 제공되지 않으면 기본은 2024년으로 검색하십시오.
 
+만약에 Search_poi을 사용한다면 무조건 다음을 따라야합니다.:
+You must search in Traditional Chinese/Mandarin or english.
+
 
 Use the following format:
 
@@ -140,34 +145,6 @@ Previous conversation history:
 Question: {input}
 {agent_scratchpad}
 """
-
-template_with_history = """Answer the following questions as best you can, but speaking as passionate travel expert. You have access to the following tools:
-
-{tools}
-
-만약에 Search flight and airport tool을 사용한다면 무조건 다음을 따라야합니다.:
-연도가 제공되지 않으면 기본은 2024년으로 검색하십시오.
-통화는 무조건 대한민국 원으로 출력되어야합니다.
-
-Use the following format:
-
-Question: the input question you must answer
-Thought: you should always think about what to do
-Action: the action to take, should be one of [{tool_names}]
-Action Input: the input to the action
-Observation: the result of the action
-... (this Thought/Action/Action Input/Observation can repeat N times)
-Thought: I now know the final answer
-Final Answer: the final answer to the original input question, You must answer in Korean
-
-Begin! Remember to answer as a passionate and informative travel expert when giving your final answer.
-
-Previous conversation history:
-{history}
-
-Question: {input}
-{agent_scratchpad}"""
-
 
 # Set up a prompt template
 class CustomPromptTemplate(StringPromptTemplate):
@@ -288,9 +265,9 @@ def agent():
             description="useful for when you need to answer airport questions or need to get IATA code"
         ),
         Tool.from_function(
-            name="Search poi",
+            name="Search_poi",
             func=lambda x: all_in_1_agent({"input": x}),
-            description="useful for when you need to get the keyword about travel information"
+            description="useful for when you need to get the keyword about travel information or get experience about travel"
         ),
         Tool(
             name="Search datetime",
@@ -326,18 +303,11 @@ def agent():
         # This includes the `intermediate_steps` variable because that is needed
         input_variables=["input", "intermediate_steps", "history"]
     )
-    prompt_with_history = CustomPromptTemplate(
-        template=template,
-        tools=tools,
-        # This omits the `agent_scratchpad`, `tools`, and `tool_names` variables because those are generated dynamically
-        # This includes the `intermediate_steps` variable because that is needed
-        input_variables=["input", "intermediate_steps", "history"]
-    )
     output_parser = CustomOutputParser()
 
     # memory = ConversationBufferWindowMemory(k=2)
     # llm = ChatOpenAI(temperature=0.7, model="gpt-3.5-turbo")
-    llm = ChatOpenAI(temperature=0.7, model="gpt-4-turbo", streaming=True, callbacks=[StreamingStdOutCallbackHandler()])
+    llm = ChatOpenAI(temperature=0.7, model="gpt-4-turbo", streaming=True, callbacks=[StreamingStdOutCallbackHandler()], cache=True)
     # llm = ChatGoogleGenerativeAI(model="gemini-pro")
     # LLM chain consisting of the LLM and a prompt
     llm_chain = LLMChain(llm=llm, prompt=prompt)
@@ -366,7 +336,14 @@ def agent():
         init_similar_cache(cache_obj=_cache_obj, data_dir=f"similar_cache_{hashed_llm}",
                            embedding=LangChain(OpenAIEmbeddings(model="text-embedding-3-small")))
 
-    # set_llm_cache(GPTCache(init_gptcache))
+
+    @st.cache_resource(ttl=10800, show_spinner=False)
+    def set_cache():
+        return set_llm_cache(GPTCache(init_gptcache))
+
+    # set_cache()
+
+    set_llm_cache(InMemoryCache())
 
     prompt_for_amadeus1 = hub.pull("hwchase17/react-json")
 
@@ -392,6 +369,7 @@ def agent():
         stop=["\nObservation:"],
         allowed_tools=tool_names
     )
+
     agent_executor = AgentExecutor.from_agent_and_tools(agent=agent, tools=tools, verbose=True, memory=memory,
                                                         handle_parsing_errors="Check your output and make sure it conforms, use the Action/Action Input syntax, If the current output is the final answer, you must add 'Final Answer:' at the beginning.",
                                                         max_iterations=20)
