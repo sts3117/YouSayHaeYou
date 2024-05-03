@@ -1,6 +1,5 @@
 import asyncio
 
-import google.generativeai
 from langchain.agents import Tool, AgentExecutor, LLMSingleActionAgent, AgentOutputParser, create_react_agent
 from langchain.prompts import StringPromptTemplate
 from langchain import SerpAPIWrapper, LLMChain
@@ -9,7 +8,6 @@ from langchain.schema import AgentAction, AgentFinish, OutputParserException
 import re
 from langchain.agents.output_parsers import ReActJsonSingleInputOutputParser
 from langchain_openai import ChatOpenAI
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.tools import DuckDuckGoSearchRun
 from langchain import hub
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
